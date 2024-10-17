@@ -1,0 +1,8 @@
+[build]
+  cmd = "go build -o ./bin/app"
+  bin = "bin/app"
+  full_bin = "APP_ENV=development go run main.go"
+
+[log]
+  color = true
+  time = true

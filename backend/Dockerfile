@@ -65,3 +65,5 @@ RUN go install github.com/air-verse/air@latest
 # MySQL のスキーマ定義ツール "mysqldef" をインストール
 # バージョン変わった！
 RUN go install github.com/sqldef/sqldef/cmd/mysqldef@latest
+
+CMD ["air"]
