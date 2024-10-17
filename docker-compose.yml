@@ -1,0 +1,87 @@
+services:
+  app:
+    container_name: app
+    restart: always
+    build:
+      context: ./backend
+      args:
+        target: dev
+    volumes:
+      - ./backend/:/app
+    environment:
+      GO_ENV: development
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: admin
+      DB_PASSWORD: password
+      DB_NAME: point_app
+      REDIS_HOST: point-app-redis
+      REDIS_PORT: 6379
+      AWS_ENDPOINT: http://aws:4566
+      AWS_ACCESS_KEY_ID: accesskey
+      AWS_SECRET_KEY: secretkey
+      AWS_REGION: ap-northeast-1
+      SENDER_MAIL_ADDRESS: example@example.com
+      FRONT_ENDPOINT: http://localhost:3000
+    tty: true
+    ports:
+      - 8081:80
+    depends_on:
+      - db
+      - cache
+      - aws
+
+  doc:
+    image: swaggerapi/swagger-ui:latest
+    container_name: doc
+    restart: always
+    volumes:
+      - ./docs/openapi.yml:/usr/share/nginx/html/openapi.yml
+    environment:
+      - URL=http://localhost/openapi.yml
+      - SWAGGER_JSON=/usr/share/nginx/html/openapi.yml
+    ports:
+      - 8080:8080
+
+  db:
+    image: mysql:8.0.31
+    platform: linux/amd64
+    container_name: point-app-db
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes" # セキュリティ上推奨されない。開発環境でのみ使用
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: password
+      MYSQL_DATABASE: point_app
+    volumes:
+      - point-app-db-data:/var/lib/mysql
+      - ./backend/_tools/mysql/conf.d:/etc/mysql/conf.d:cached
+    ports:
+      - "33306:3306"
+
+  cache:
+    image: "redis:latest"
+    container_name: point-app-redis
+    ports:
+      - "36379:6379"
+    volumes:
+      - point-app-redis-data:/data
+
+  panel:
+    image: "adminer:latest"
+    restart: always
+    ports:
+      - 8082:8080
+
+  aws:
+    image: localstack/localstack
+    ports:
+      - 4566:4566
+      - 4510-4559:4510-4559
+    tty: true
+    environment:
+      - SERVICES=ses
+      - DEFAULT_REGION=ap-northeast-1
+
+volumes:
+  point-app-db-data:
+  point-app-redis-data:
