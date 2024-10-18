@@ -30,6 +30,7 @@ services:
       - db
       - cache
       - aws
+    command: ["sh", "-c", "mysqldef -uadmin -ppassword -hdb point_app < /app/schema/tables.sql && air"]
 
   doc:
     image: swaggerapi/swagger-ui:latest
